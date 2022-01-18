@@ -1,8 +1,10 @@
 package com.example.database_practice2;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,152 +12,137 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
-
-    EditText editText;
-    EditText editText2;
-    TextView textView;
-
-    DatabaseHelper dbHelper;
+    DataBaseHelper dbHelper;
     SQLiteDatabase database;
 
-    String tableName;
+    EditText editname;
+    EditText edithealth;
+    EditText editcount;
+
+    Button btnin;
+    Button btnse;
+    Button btnde;
+    Button btnup;
+
+    TextView textView;
+
+    String tableName = "groupTBL";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        editText = findViewById(R.id.editText);
-        editText2 = findViewById(R.id.editText2);
-        textView = findViewById(R.id.textView);
+        editname = findViewById(R.id.editName);
+        edithealth = findViewById(R.id.editHealth);
+        editcount = findViewById(R.id.editCount);
 
+        textView = findViewById(R.id.result);
+        createDatabase();
+        createTable(tableName);
 
-
-        Button button = findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
+        btnin = findViewById(R.id.insert);
+        btnin.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                String databaseName = editText.getText().toString();
-                createDatabase(databaseName);
+            public void onClick(View view) {
+                insertRecord(editname.getText().toString()
+                        ,edithealth.getText().toString()
+                        ,Integer.parseInt(editcount.getText().toString()));
             }
         });
 
-        Button button2 = findViewById(R.id.button2);
-        button2.setOnClickListener(new View.OnClickListener() {
+        btnse = findViewById(R.id.query);
+        btnse.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                tableName = editText2.getText().toString();
-                createTable(tableName);
-
-                insertRecord("'허주선'", 26, "'010-2133-2532'");
-                insertRecord("'gjwtnjs'", 24, "'010-2133-2133'");
-                insertRecord("'wntjsc'", 27, "'010-2532-2532'");
-            }
-        });
-
-        Button button3 = findViewById(R.id.button3);
-        button3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 executeQuery();
             }
         });
+
+        btnde = findViewById(R.id.delete);
+        btnde.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                deleteRecord(editname.getText().toString()
+                        ,edithealth.getText().toString()
+                        ,Integer.parseInt(editcount.getText().toString()));
+            }
+        });
+
+        btnup = findViewById(R.id.update);
+        btnup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                updateRecord("허주선", "운ㄷ", 3);
+            }
+        });
     }
 
+    private void createDatabase() {
+        Log.d("DB","createDatabase 호출됨.");
 
-    private void createDatabase(String name) {
-        println("createDatabase 호출됨.");
-
-        dbHelper = new DatabaseHelper(this);
+        dbHelper = new DataBaseHelper(this);
         database = dbHelper.getWritableDatabase();
 
-        println("데이터베이스 생성함 : " + name);
+        Log.d("DB","데이터베이스 생성함 ");
     }
 
-    private void createTable(String name) {
-        println("createTable 호출됨.");
-
+    private void createTable(String tableName) {
         if (database == null) {
-            println("데이터베이스를 먼저 생성하세요.");
+            Log.d("DB","데이터베이스를 먼저 생성하세요.");
             return;
         }
 
-        database.execSQL("create table if not exists " + name + "("
+        database.execSQL("create table if not exists " + tableName + "("
                 + " _id integer PRIMARY KEY autoincrement, "
                 + " name text, "
-                + " age integer, "
-                + " mobile text)");
+                + " health text, "
+                + " count integer)");
 
-        println("테이블 생성함 : " + name);
     }
 
-
-    private void insertRecord(String userName, int userAge, String userMobile) {
-        println("insertRecord 호출됨.");
-
+    private void insertRecord(String userName, String userHealth, int userCount) {
         if (database == null) {
-            println("데이터베이스를 먼저 생성하세요.");
-            return;
-        }
-
-        if (tableName == null) {
-            println("테이블을 먼저 생성하세요.");
+            Log.d("DB","데이터베이스를 생성하세요.");
             return;
         }
 
         database.execSQL("insert into " + tableName
-                + "(name, age, mobile) "
+                + " (name, health, count) "
                 + " values "
-                + "("+ userName
-                + ", "+ userAge
-                + ", "+ userMobile
+                + "('" + userName
+                + "','" + userHealth
+                + "'," + userCount
                 + ")");
-
-        println("레코드 추가함.");
-    }
-//    private void insertRecord() {
-//        println("insertRecord 호출됨.");
-//
-//        if (database == null) {
-//            println("데이터베이스를 먼저 생성하세요.");
-//            return;
-//        }
-//
-//        if (tableName == null) {
-//            println("테이블을 먼저 생성하세요.");
-//            return;
-//        }
-//
-//        database.execSQL("insert into " + tableName
-//                + "(name, age, mobile) "
-//                + " values "
-//                + "('John', 20, '010-1000-1000')");
-//
-//        println("레코드 추가함.");
-//    }
-
-    public void println(String data) {
-        textView.append(data + "\n");
     }
 
-    public void executeQuery() {
-        println("executeQuery 호출됨.");
+    private void executeQuery() {
 
-        Cursor cursor = database.rawQuery("select _id, name, age, mobile from emp", null);
-        int recordCount = cursor.getCount();
-        println("레코드 개수 : " + recordCount);
+        Cursor cursor = database.rawQuery("select _id, name, health, count from "+tableName, null);
+        int recordCount = cursor.getCount(); //레코드 개수
 
         for (int i = 0; i < recordCount; i++) {
-            cursor.moveToNext();
+            //for문 사용시, getCount()메소드를 이용해 전체 레코드 개수를 알아내어 moveToNext()메소드 사용
+
+            cursor.moveToNext();    //cursor를 다음으로 이동
 
             int id = cursor.getInt(0);
             String name = cursor.getString(1);
-            int age = cursor.getInt(2);
-            String mobile = cursor.getString(3);
+            String health = cursor.getString(2);
+            int count = cursor.getInt(3);
 
-            println("레코드 #" + i + " : " + id + ", " + name + ", " + age + ", " + mobile);
+            textView.append(name + "\n" + health + "\n" + count + "\n");
+
         }
 
         cursor.close();
+    }
+    private void deleteRecord(String userName, String userHealth, int userCount){
+        database.execSQL("DELETE FROM " + tableName + " WHERE name = '" + userName + "';");
+
+    }
+    private void updateRecord(String userName, String userHealth, int userCount){
+        database.execSQL("UPDATE " + tableName + " SET health = '" + userHealth + "' WHERE name = '" + userName + "';");
+
     }
 }
