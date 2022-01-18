@@ -1,6 +1,5 @@
 package com.example.database_practice2;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -66,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
                 deleteRecord(editname.getText().toString()
                         ,edithealth.getText().toString()
                         ,Integer.parseInt(editcount.getText().toString()));
+                Log.d("삭제됨", editname.getText().toString());
             }
         });
 
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         btnup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                updateRecord("허주선", "운ㄷ", 3);
+                updateRecord("허주선", "수정", 1);
             }
         });
     }
@@ -116,6 +116,15 @@ public class MainActivity extends AppCompatActivity {
                 + ")");
     }
 
+    private void deleteRecord(String userName, String userHealth, int userCount){
+        database.execSQL("DELETE FROM " + tableName + " WHERE name = '" + userName + "';");
+    }
+
+    private void updateRecord(String userName, String userHealth, int userCount){
+        database.execSQL("UPDATE " + tableName + " SET health = '" + userHealth + "' WHERE name = '" + userName + "';");
+
+    }
+
     private void executeQuery() {
 
         Cursor cursor = database.rawQuery("select _id, name, health, count from "+tableName, null);
@@ -137,12 +146,5 @@ public class MainActivity extends AppCompatActivity {
 
         cursor.close();
     }
-    private void deleteRecord(String userName, String userHealth, int userCount){
-        database.execSQL("DELETE FROM " + tableName + " WHERE name = '" + userName + "';");
 
-    }
-    private void updateRecord(String userName, String userHealth, int userCount){
-        database.execSQL("UPDATE " + tableName + " SET health = '" + userHealth + "' WHERE name = '" + userName + "';");
-
-    }
 }

@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class DataBaseHelper extends SQLiteOpenHelper {
     public static String dbName = "groupTBL.db";
-    public static int VERSION = 1;
+    public static int VERSION = 2;
 
 
 
